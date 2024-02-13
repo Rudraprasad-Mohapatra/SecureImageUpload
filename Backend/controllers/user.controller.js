@@ -56,11 +56,52 @@ const signup = async function (req, res, next) {
     }
 }
 
-const login = function (req, res, next) {
+const login = async function (req, res, next) {
+    try {
+        const { email, password } = req.body;
 
+        if (!email || !password) {
+            return next(new AppError("All fields are required", 400));
+        }
+
+        const user = await User.findOne({
+            email
+        }).select("+password");
+
+        if (!user || !(await user.comparePassword(password))) {
+            return next(new AppError("Email or password does not match", 400));
+        }
+
+        const token = await user.generateJWTtoken();
+        user.password = undefined;
+
+        res.cookie('token', token, cookieOptions);
+
+        res.status(200).json({
+            success: true,
+            message: "User loggedin successfully",
+            user
+        });
+    } catch (e) {
+        return next(new AppError("Email or password does not match", 500));
+    }
+}
+
+const logout = (req, res) => {
+    res.cookie("token", null, {
+        secure: true,
+        httpOnly: true,
+        maxAge: 0
+    })
+
+    res.status(200).json({
+        success: true,
+        message: "User logged out successfully"
+    })
 }
 
 export {
     signup,
-    login
+    login,
+    logout
 }
