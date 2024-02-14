@@ -4,6 +4,6 @@ import { postphotos } from "../controllers/post.controller.js";
 import isLoggedIn from "../middlewares/auth.middleware.js";
 
 const router = Router();
-router.post("/postphotos", isLoggedIn, upload.array('files', 5), postphotos);
+router.post("/postphotos", isLoggedIn, upload.array('files', 10), postphotos);
 
 export default router;
